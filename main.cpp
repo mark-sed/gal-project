@@ -1,22 +1,16 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <iterator>
-#include <algorithm>
 #include <iostream>
-#include <string>
-#include "src/Graph.hpp"
+#include "graph.hpp"
 
+int main(int argc, char *argv[]) {
+    auto g = new Graph(5);
+    g->add_edge(0, 1);
+    g->add_edge(0, 2);
+    g->add_edge(0, 3);
+    g->add_edge(1, 2);
+    g->add_edge(3, 2);
 
-int main(int argc, char* argv[]) {
-    // parse cmd line args
-    int opt;
-    std::string filename = "";
+    g->kcolor(100);
+    g->create_dot("g1", "g.dot");
 
-    while((opt = getopt(argc, argv, ":if:lrx")) != -1) {
-        switch(opt) {
-            case 'f':
-                std::cout << "* Filename: " << optarg << std::endl;
-                filename = optarg;
-        }
-    }
+    return 0;
 }

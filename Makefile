@@ -1,19 +1,11 @@
-# Project: Graph algorithms
-# Author: Jiri Kristof
-# Date: 23-10-2021
-
 CC=g++
-INPUT=main.cpp src/Graph.cpp
-OUTPUT=proj
-CFLAGS=-Wall -pedantic -I boost
-FILENAME=graph.dot
+FLAGS=-Wall -std=c++17
+FILES=$(wildcard *.cpp)
+OUTPUT=gal
+DOT=g.dot
 
-.PHONY: run
+build:
+	$(CC) $(FILES) $(FLAGS) -o $(OUTPUT)
 
-compile:
-	${CC} ${CFLAGS} ${INPUT} -o ${OUTPUT}
-
-# run example:
-# 	make run FILENAME=name_of_file.dot
-run:
-	./${OUTPUT} -f ${FILENAME}
+dot:
+	dot $(DOT) -Tpng -o $(DOT).png
