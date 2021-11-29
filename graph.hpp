@@ -26,6 +26,12 @@ public:
      */ 
     Graph(int size);
 
+    /**
+     * Constructor loading graph from a file
+     * @param filename Path to the graph file
+     */ 
+    Graph(const char *filename);
+
     /** Destructor */
     ~Graph() {
         delete[] adj;
@@ -55,7 +61,7 @@ public:
      * Greedy k coloring algorithm
      * @param k Number of available colors
      */ 
-    void kcolor(int k);
+    void kcolor_greedy(int k);
 };
 
 #endif//_GRAPH_HPP_
