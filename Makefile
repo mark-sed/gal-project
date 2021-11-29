@@ -5,7 +5,7 @@ OUTPUT=gal
 DOT=g.dot
 
 build:
-	$(CC) $(FILES) $(FLAGS) -o $(OUTPUT)
+	$(CC) $(FILES) $(FLAGS) -o $(OUTPUT).out
 
 dot:
 	dot $(DOT) -Tpng -o $(DOT).png

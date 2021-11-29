@@ -43,8 +43,6 @@ Graph::Graph(const char *filename) {
             int v2 = atoi(sub_match1.str().c_str());
             f_verts_dst.push_back(v2);
 
-            std::cout << v1 << " -- " << v2 << std::endl;
-
             if(v1 > max_vertex) {
                 max_vertex = v1;
             }
