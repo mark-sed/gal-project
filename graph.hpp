@@ -2,6 +2,12 @@
 #define _GRAPH_HPP_
 
 #include <vector>
+#define DEBUG
+#ifdef DEBUG
+#define LOG(stream) std::cout << "LOG: " << (stream) << std::endl;
+#else
+#define LOG(stream)
+#endif
 
 /** Genetic programming resources */
 namespace GP {
@@ -18,6 +24,7 @@ private:
 public:
     int size;               ///< |V| - amount of vertices
     std::vector<int> *adj;  ///< Adjacency list
+    std::vector<int> *constraint; ///< Vertex color constraints
     Color *colors;          ///< Colors assigned to vertices (set by coloring methods)
 
     /**
@@ -28,9 +35,10 @@ public:
 
     /**
      * Constructor loading graph from a file
-     * @param filename Path to the graph file
+     * @param graph_file Path to the graph file
+     * @param constraint_file Path to file containing constraints or nullptr when there are none
      */ 
-    Graph(const char *filename);
+    Graph(const char *graph_file, const char *constraint_file=nullptr);
 
     /** Destructor */
     ~Graph() {
@@ -60,8 +68,9 @@ public:
     /**
      * Greedy k coloring algorithm
      * @param k Number of available colors
+     * @return true if graph was colored otherwise false
      */ 
-    void kcolor_greedy(int k);
+    bool kcolor_greedy(int k);
 };
 
 #endif//_GRAPH_HPP_
