@@ -30,12 +30,18 @@ _Note_ that the file parsing ends after finding `}` on its own line (line with j
 
 ## Graph generator
 Graph generator can be used for easy generating of graph in the input format. Python3 interpreter must be installed to run the script. You can describe properties of the desired graph using these arguments:
-- `-n/--nodes <int>` specifies desired number of nodes of graph, this argument is compulsory,
-- `-e/--edges <int>` specifies desired number of edges in graph, note that if number is less than minimum/maximum number of edges in unoriented connected graph, this value is changed; it could also be changed if any of flags described below is used,
-- `-s/--sparse` specifies, that desired graph should be "sparse". 
-- `-d/--dense` specifies, that desired graph should be "dense". 
+- `-nn/--nodes-number <int>` specifies desired number of nodes of graph, this argument is compulsory,
+- `-en/--edges-number <int>` specifies desired number of edges in graph, note that if number is less than minimum/maximum number of edges in unoriented connected graph, this value is changed; it could also be changed if any of flags described below is used,
+- `-sf/--sparse-flag` specifies, that desired graph should be "sparse",
+- `-df/--dense-flag` specifies, that desired graph should be "dense",
+- `-cn/--constraints-num <int>` defines number of constraints to be ,generated, defaultly 0,
+- `-cc/--constraints-colors <list>` list of colors to be used in constraints, there must be at least 4 different colors,
+- `-scf/--strict-constraint-fulfill` if flag is set, then constraints are generated so that there is a solution of graph coloring,
+- `-gf/--graph-filename <str>` defines name of file into which graph dot representation will be saved, defaultly `graph.dot` ,
+- `-cf/--constraints-filename <str>` defines name of file into which constraints dot representation will be saved, defaultly `constraints.dot`,
+- `-p/--print` if flag is set, then graph and constraints are both saved into specified files and printed to stdout. 
 
-Note that output graph is always connected, meaning there is always n-1 edges (where n is number of nodes). If number of edges is not specified and no flag is set, then output graph is degraded to linked list. 
+Note that output graph is always connected, meaning there is always n-1 edges (where n is number of nodes). If number of edges is not specified and no flag is set, then output graph is degraded to linked list. Maximum constraints that can be generated is defined as `nodes_number * len(constraints_colors)`, e.g. for 5 nodes and 4 colors, 20 is maximum number of constraints that can be generated. 
 
 ## Example input graph
 ```
