@@ -2,7 +2,6 @@
 #define _GRAPH_HPP_
 
 #include <vector>
-#define DEBUG
 #ifdef DEBUG
 #define LOG(stream) std::cout << "LOG: " << (stream) << std::endl;
 #else
@@ -11,7 +10,7 @@
 
 /** Genetic programming resources */
 namespace GP {
-
+    
 };
 
 /** Color representation */
@@ -21,6 +20,15 @@ using Color = int;
 class Graph {
 private:
     int colors_used;
+
+    /**
+     * @brief DFS visit 
+     * @param v Vertex to visit
+     * @param visited Array of not/visited vertexes
+     * @return true If correct in this visits
+     * @return false If incorrect in this visit
+     */
+    bool correctness_dfs_visit(int v, bool **visited);
 public:
     int size;               ///< |V| - amount of vertices
     std::vector<int> *adj;  ///< Adjacency list
@@ -64,6 +72,12 @@ public:
      * @param filename Output dot file path
      */ 
     void create_dot(const char *name, const char *filename=nullptr);
+
+    /**
+     * Checks if the graph ic correctly k-colored (used colors <= k)
+     * @return true if the graph is correctly colored
+     */ 
+    bool is_correctly_colored();
 
     /**
      * Greedy k coloring algorithm
