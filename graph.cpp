@@ -155,6 +155,23 @@ void Graph::create_dot(const char *name, const char *filename) {
     for(int c = colors_used-1; c >= 0; --c) {
         dot_stream << "\t\t\"Color " << c << "\" [style=\"filled\"; fillcolor=\"" << (c * color_step) << " 1.0 1.0\"]" << std::endl;
     }
+    // Print constraints
+    dot_stream << "\t\t\"Constraints:\n";
+    for(int i = 0; i < size; ++i) {
+        bool first = true;
+        for(auto c: constraint[i]) {
+            if(first) {
+                dot_stream << i << ": ";
+                dot_stream << c;
+                first = false;
+            }
+            else
+                dot_stream << "," << c; 
+        }
+        if(!first)
+            dot_stream << "\\l";
+    }
+    dot_stream << "\" [shape=box]\n";
     // Closing brace
     dot_stream << "\t}\n}" << std::endl;
 
@@ -170,6 +187,43 @@ void Graph::create_dot(const char *name, const char *filename) {
         std::cout << dot_stream.str();
     }
     LOG("Dot created");
+}
+
+bool Graph::correctness_dfs_visit(int v, bool **visited) {
+    (*visited)[v] = true;
+    // Check if the chosen color is in the constraint
+    if(constraint[v].size() > 0 
+       && std::find(constraint[v].begin(), constraint[v].end(), colors[v]) == constraint[v].end()) {
+        return false;
+    }
+    for(auto u: adj[v]) {
+        // Check if neighbouts have different colors
+        if(colors[u] == colors[v] || colors[u] < 0) {
+            return false;
+        }
+        if(!(*visited)[u]) {
+            if(!correctness_dfs_visit(u, visited)){
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool Graph::is_correctly_colored() {
+    auto visited = new bool[size]();
+    bool rval = true;
+    for(int i = 0; i < size; ++i) {
+        if(!visited[i]) {
+            if(!correctness_dfs_visit(i, &visited)){
+                rval = false;
+                break;
+            }
+        }
+    }
+    
+    delete[] visited;
+    return rval;
 }
 
 bool Graph::kcolor_greedy(int k) {
@@ -193,7 +247,8 @@ bool Graph::kcolor_greedy(int k) {
         bool constr_fulfilled = true;
         /// First color the constrainted nodes
         for(int node = 0; node < size; ++node) {
-            for(auto c: constraint[node]) {
+            for(size_t ci = 0; ci < constraint[node].size(); ++ci) {
+                auto c = constraint[node][ci];
                 bool can_be_used = true;
                 for(auto neighbour: adj[node]) {
                     if(colors[neighbour] == c) {
@@ -206,28 +261,51 @@ bool Graph::kcolor_greedy(int k) {
                     colors[node] = c;
                     break;
                 }
-                else if(c == k-1) {
+                else if(ci == constraint[node].size()-1) {
                     // Try another coloring
-                    constr_fulfilled = true;
+                    LOG(std::string("\tConstraint coloring has to be redone, cannot fulfill vertex ")+
+                        std::to_string(node)+" constraints");
+                    // Find least colliding color for this, color this and remove color for neighbours with the same one
+                    int best_c = constraint[node][0];
+                    int best_uses = -1;
+                    for(auto poss_c: constraint[node]) {
+                        int uses = 0;
+                        for(auto n: adj[node]) {
+                            if(std::find(constraint[n].begin(), constraint[n].end(), poss_c) != constraint[n].end()){
+                                ++uses;
+                            }
+                        }
+                        if(uses < best_uses || best_uses == -1) {
+                            best_uses = uses;
+                            best_c = poss_c;
+                        }
+                    }
+                    LOG(std::string("Attempt to recolor node ")+std::to_string(node)+" using least used neighbour color "
+                        +std::to_string(best_c)+" used by "+std::to_string(best_uses)+" neighbours");
+                    // Color this node
+                    colors[node] = best_c;
+                    // Remove color from neighbours using it
+                    for(auto n: adj[node]) {
+                        if(colors[n] == best_c) {
+                            colors[n] = -1;
+                            LOG(std::string("Uncoloring node ")+std::to_string(n));
+                        }
+                    }
+                    constr_fulfilled = false;
                     break;
                 }
                 else {
                     LOG(std::string("\tCould not fulfill constraint for ")+std::to_string(node));
-                    
-                    // TODO: Find least colliding color for this, color this and 
-                    // remove color for neighbours with the same one
-                    
-
-                    break;
                 }
             }
         }
+        
         if(constr_fulfilled) {
             for(int node = 0; node < size; ++node) {
                 if(colors[node] >= 0 && node != size - 1) {
                     continue;
                 }
-                else if(colors[node] < 0 && node == size - 1) {
+                else if(colors[node] >= 0 && node == size - 1) {
                     done = true; 
                     break;
                 }

@@ -9,6 +9,7 @@ int main(int argc, char *argv[]) {
         int k = atoi(argv[3]);
         if(argv[4] == std::string("-g")) {
             g->kcolor_greedy(k);
+            std::cout << "Graph correctly colored: " << std::boolalpha << g->is_correctly_colored() << std::endl;
         }
         else if(argv[4] == std::string("-e")) {
 
