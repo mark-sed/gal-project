@@ -207,10 +207,10 @@ class graph_creator:
         if len(constraints_colors) < 4:
             raise ValueError("You must define at least 4 different colors")
 
-        if strict and len(constraints_colors) * node_num < constraints_num:
+        if len(constraints_colors) * node_num < constraints_num:
             raise ValueError("Cannot create {} constraints, maximum for this graph is {}".format(constraints_num, len(constraints_colors) * node_num))
         
-        if strict and len(constraints_colors) * node_num == constraints_num:
+        if len(constraints_colors) * node_num == constraints_num:
             # there is all constraints (every node is constrained to every color), aka no constraints
             self.__constraints_str = graph_creator.encode_constraints([])
             return self.__constraints_str
