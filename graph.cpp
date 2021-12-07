@@ -1,3 +1,10 @@
+/**
+ * @file graph.cpp
+ * @author Marek Sedlacek (xsedla1b@fit.vutbr.cz)
+ * @brief Graph unit
+ * @date November 2021
+ */
+
 #include <iostream>
 #include <sstream>
 #include <string>

@@ -1,17 +1,20 @@
+/**
+ * @file graph.hpp
+ * @author Marek Sedlacek (xsedla1b@fit.vutbr.cz)
+ * @brief Graph unit
+ * @date November 2021
+ */
+
 #ifndef _GRAPH_HPP_
 #define _GRAPH_HPP_
 
 #include <vector>
+#include <list>
 #ifdef DEBUG
 #define LOG(stream) std::cout << "LOG: " << (stream) << std::endl;
 #else
 #define LOG(stream)
 #endif
-
-/** Genetic programming resources */
-namespace GP {
-    
-};
 
 /** Color representation */
 using Color = int;
