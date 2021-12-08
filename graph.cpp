@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <regex>
 #include "graph.hpp"
+#include "gp.hpp"
 
 Graph::Graph(int size) : colors_used{size}, size{size} {
     this->adj = new std::vector<int>[size];
@@ -196,20 +197,20 @@ void Graph::create_dot(const char *name, const char *filename) {
     LOG("Dot created");
 }
 
-bool Graph::correctness_dfs_visit(int v, bool **visited) {
+bool Graph::correctness_dfs_visit(int v, bool **visited, Color *coloring) {
     (*visited)[v] = true;
     // Check if the chosen color is in the constraint
     if(constraint[v].size() > 0 
-       && std::find(constraint[v].begin(), constraint[v].end(), colors[v]) == constraint[v].end()) {
+       && std::find(constraint[v].begin(), constraint[v].end(), coloring[v]) == constraint[v].end()) {
         return false;
     }
     for(auto u: adj[v]) {
         // Check if neighbouts have different colors
-        if(colors[u] == colors[v] || colors[u] < 0) {
+        if(coloring[u] == coloring[v] || coloring[u] < 0) {
             return false;
         }
         if(!(*visited)[u]) {
-            if(!correctness_dfs_visit(u, visited)){
+            if(!correctness_dfs_visit(u, visited, coloring)){
                 return false;
             }
         }
@@ -217,12 +218,13 @@ bool Graph::correctness_dfs_visit(int v, bool **visited) {
     return true;
 }
 
-bool Graph::is_correctly_colored() {
+bool Graph::is_correctly_colored(Color *coloring) {
+    coloring = (coloring ? coloring : this->colors);
     auto visited = new bool[size]();
     bool rval = true;
     for(int i = 0; i < size; ++i) {
         if(!visited[i]) {
-            if(!correctness_dfs_visit(i, &visited)){
+            if(!correctness_dfs_visit(i, &visited, coloring)){
                 rval = false;
                 break;
             }
@@ -233,9 +235,9 @@ bool Graph::is_correctly_colored() {
     return rval;
 }
 
-bool Graph::kcolor_greedy(int k) {
-    LOG("Greedy algorithm started");
-    // Alloc and init colors to 0 (unassigned)
+bool Graph::kcolor_gp(int k, size_t popul_size) {
+    LOG("Genetic programming algorithm started");
+    // Enough colors for each vertex to have unique color
     if(k >= size) {
         // Every vertex can have its own color
         for(int i = 0; i < size; ++i) {
@@ -245,7 +247,39 @@ bool Graph::kcolor_greedy(int k) {
         return true;
     }
     this->colors_used = k;
-    // TODO set colors used
+
+    GP::Population population(this, popul_size, k);
+    bool done = false;
+    while(!done) {
+        auto coloring = population.evaluate();
+        if(coloring) {
+            // Correct coloring found
+            LOG("Found correct coloring");
+            done = true;
+            std::copy(coloring, coloring+size, this->colors);
+        }
+        // Crossover
+        // TODO
+
+        // Mutate
+        // TODO
+    }
+
+    return true;
+}
+
+bool Graph::kcolor_greedy(int k) {
+    LOG("Greedy algorithm started");
+    // Enough colors for each vertex to have unique color
+    if(k >= size) {
+        // Every vertex can have its own color
+        for(int i = 0; i < size; ++i) {
+            colors[i] = i;
+        }
+        this->colors_used = size;
+        return true;
+    }
+    this->colors_used = k;
 
     // Reset colors
     std::fill_n(colors, size, -1);

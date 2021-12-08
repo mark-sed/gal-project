@@ -28,10 +28,11 @@ private:
      * @brief DFS visit 
      * @param v Vertex to visit
      * @param visited Array of not/visited vertexes
+     * @param coloring Graph coloring
      * @return true If correct in this visits
      * @return false If incorrect in this visit
      */
-    bool correctness_dfs_visit(int v, bool **visited);
+    bool correctness_dfs_visit(int v, bool **visited, Color *coloring);
 public:
     int size;               ///< |V| - amount of vertices
     std::vector<int> *adj;  ///< Adjacency list
@@ -78,16 +79,26 @@ public:
 
     /**
      * Checks if the graph ic correctly k-colored (used colors <= k)
+     * @param colors Coloring of the graph, if nullptr then this graphs internal coloring is used
      * @return true if the graph is correctly colored
      */ 
-    bool is_correctly_colored();
+    bool is_correctly_colored(Color *colors=nullptr);
 
     /**
-     * Greedy k coloring algorithm
+     * Greedy k-coloring algorithm
      * @param k Number of available colors
      * @return true if graph was colored otherwise false
      */ 
     bool kcolor_greedy(int k);
+
+    /**
+     * k-coloring genetic programming algorithm
+     * @param k Number of available colors
+     * @param popul_size The amount of phenotypes to evolve
+     * @return true if the graph was colored
+     * @return false otherwise
+     */
+    bool kcolor_gp(int k, size_t popul_size);
 };
 
 #endif//_GRAPH_HPP_
