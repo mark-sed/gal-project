@@ -8,6 +8,7 @@
 #include "gp.hpp"
 #include <random>
 #include <algorithm>
+#include <iterator>
 #include <iostream>
 
 using namespace GP;
@@ -49,7 +50,24 @@ int Phenotype::fitness() {
     return incorrect;
 }
 
-Population::Population(Graph *graph, size_t size, int k) : graph{graph}, size{size}, k{k} {
+void Phenotype::mutate() {
+    int rand_node = rand_int(0, graph->size-1);
+    int rand_color = rand_int(0, k-1);
+    colors[rand_node] = rand_color;
+}
+
+void Phenotype::crossover(const Phenotype *other) { 
+    int rand1 = rand_int(0, graph->size-1);
+    int rand2 = rand_int(0, graph->size-1);
+    int start = rand1 < rand2 ? rand1 : rand2;
+    int end = rand1 < rand2 ? rand2 : rand1;
+    std::copy(other->colors + start, other->colors + end, colors+start);
+}
+
+Population::Population(Graph *graph, size_t size, int k,
+                       float mutate_chance, float crossover_chance, bool elitism) 
+                       : graph{graph}, size{size}, k{k}, 
+                         mutate_chance{mutate_chance}, crossover_chance{crossover_chance}, elitism{elitism} {
     this->candidates = new std::list<Phenotype *>();
     for(size_t i = 0; i < size; ++i) {
         this->candidates->push_back(new Phenotype(graph, k));
@@ -67,15 +85,59 @@ Population::~Population() {
 
 Color *Population::evaluate() {
     int i = 0;
-    for(auto *pheno: *this->candidates) {
-        quality[i] = pheno->fitness();
-        std::cout << quality[0] << std::endl;
+    int best_i = -1;
+    std::list<Phenotype *>::iterator best;
+    for(auto pheno = this->candidates->begin(); pheno != this->candidates->end(); ++pheno) {
+        quality[i] = (*pheno)->fitness();
         if(quality[i] == 0) {
             // Correct coloring found
-            std::cout << "AAAA\n" << i << "," << quality[i] << "\n";
-            return pheno->colors;
+            return (*pheno)->colors;
+        }
+        if(best_i == -1 || quality[i] < quality[best_i]) {
+            best_i = i;
+            best = pheno;
         }
         ++i;
     }
+    // Put the best pheno at the begining
+    std::swap(quality[0], quality[best_i]);
+    std::swap(*best, *(this->candidates->begin()));
     return nullptr;
+}
+
+void Population::mutate() {
+    int amount_done = 0;
+    for(auto *pheno: *candidates) {
+        if(rand_float() <= mutate_chance) {
+            if(elitism && pheno == candidates->front()) {
+                continue;
+            }
+            pheno->mutate();
+            ++amount_done;
+        }
+    }
+    LOG(std::to_string(amount_done)+" mutations done");
+}
+
+void Population::crossover() {
+    size_t size = candidates->size();
+    int amount_done = 0;
+    for(auto pheno = this->candidates->begin(); pheno != this->candidates->end(); ++pheno) {
+        if(elitism && *pheno == candidates->front()) {
+            continue;
+        }
+        if(rand_float() <= crossover_chance) {
+            int offset;
+            Phenotype *other;
+            do {
+                offset = rand_int(0, size-1);
+                auto it = this->candidates->begin();
+                std::advance(it, offset);
+                other = *it;
+            } while(other == *pheno);
+            (*pheno)->crossover(other);
+            ++amount_done;
+        }
+    }
+    LOG(std::to_string(amount_done)+" crossovers done");
 }

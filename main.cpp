@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
         else if(argv[4] == std::string("-e")) {
             GP::init();
             // TODO: read the population size from argv
-            g->kcolor_gp(k, 50);
+            g->kcolor_gp(k, 20);
         }
         else {
             std::cerr << "ERROR: Unknwon algorithm '" << argv[3] << "'" << std::endl;

@@ -235,7 +235,7 @@ bool Graph::is_correctly_colored(Color *coloring) {
     return rval;
 }
 
-bool Graph::kcolor_gp(int k, size_t popul_size) {
+bool Graph::kcolor_gp(int k, size_t popul_size, int graph_logging_period) {
     LOG("Genetic programming algorithm started");
     // Enough colors for each vertex to have unique color
     if(k >= size) {
@@ -248,9 +248,12 @@ bool Graph::kcolor_gp(int k, size_t popul_size) {
     }
     this->colors_used = k;
 
-    GP::Population population(this, popul_size, k);
+    GP::Population population(this, popul_size, k, 0.1f, 0.75f, true);
     bool done = false;
+    int iteration = 0;
     while(!done) {
+        ++iteration;
+        LOG(std::string("Starting iteration ")+std::to_string(iteration));
         auto coloring = population.evaluate();
         if(coloring) {
             // Correct coloring found
@@ -259,16 +262,26 @@ bool Graph::kcolor_gp(int k, size_t popul_size) {
             std::copy(coloring, coloring+size, this->colors);
         }
         // Crossover
-        // TODO
-
+        population.crossover();
         // Mutate
-        // TODO
+        population.mutate();
+
+        LOG(std::string("\tBest fintess: ")+std::to_string(population.quality[0]));
+        if(graph_logging_period != -1 && iteration % graph_logging_period == 0) {
+            std::copy(population.candidates->front()->colors, population.candidates->front()->colors+size, this->colors);
+            create_dot("partially_evolved", ("iteration"+std::to_string(iteration)+"_fit_"+std::to_string(population.quality[0])+".colored.dot").c_str());
+        }
     }
 
     return true;
 }
 
 bool Graph::kcolor_greedy(int k) {
+
+    // TODO
+    // Use color matrix like in lectures?
+
+
     LOG("Greedy algorithm started");
     // Enough colors for each vertex to have unique color
     if(k >= size) {
@@ -288,6 +301,9 @@ bool Graph::kcolor_greedy(int k) {
         bool constr_fulfilled = true;
         /// First color the constrainted nodes
         for(int node = 0; node < size; ++node) {
+            if(colors[node] >= 0) {
+                continue;
+            }
             for(size_t ci = 0; ci < constraint[node].size(); ++ci) {
                 auto c = constraint[node][ci];
                 bool can_be_used = true;
@@ -329,7 +345,7 @@ bool Graph::kcolor_greedy(int k) {
                     for(auto n: adj[node]) {
                         if(colors[n] == best_c) {
                             colors[n] = -1;
-                            LOG(std::string("Uncoloring node ")+std::to_string(n));
+                            LOG(std::string("\tUncoloring node ")+std::to_string(n));
                         }
                     }
                     constr_fulfilled = false;
@@ -342,6 +358,7 @@ bool Graph::kcolor_greedy(int k) {
         }
         
         if(constr_fulfilled) {
+            bool redo_coloring = false;
             for(int node = 0; node < size; ++node) {
                 if(colors[node] >= 0 && node != size - 1) {
                     continue;
@@ -365,8 +382,39 @@ bool Graph::kcolor_greedy(int k) {
                         break;
                     }
                     else if(c == k-1) {
-                        // TODO: 
+                        // Try another coloring
+                        LOG(std::string("\tColoring has to be redone, coloring for ")+
+                            std::to_string(node)+" collides");
+
+                        // Find the color least used by neighbours
+                        int best_uses = -1;
+                        int best_c = 0;
+                        for(int n_c = 0; n_c < k; ++n_c) {
+                            int uses = 0;
+                            for(auto n: adj[node]) {
+                                if(colors[n] == n_c) {
+                                    ++uses;
+                                }
+                            }
+                            if(uses < best_uses || best_uses == -1) {
+                                best_uses = uses;
+                                best_c = n_c;
+                            }
+                        }
+                        // Uncolor neighbours and color this node
+                        colors[node] = best_c;
+                        for(auto n: adj[node]) {
+                            if(colors[n] == best_c) {
+                                colors[n] = -1;
+                                LOG(std::string("\tUncoloring node ")+std::to_string(n));
+                            }
+                        }
+                        redo_coloring = true;
+                        break;
                     }
+                }
+                if(redo_coloring) {
+                    break;
                 }
                 if(node == size - 1) {
                     // All nodes are colored
