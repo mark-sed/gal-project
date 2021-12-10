@@ -10,6 +10,7 @@
 
 #include "graph.hpp"
 #include <list>
+#include <vector>
 #include <stddef.h>
 #include <random>
 #include <time.h>
@@ -22,7 +23,7 @@ namespace GP {
         std::srand(time(nullptr));
     }
 
-    inline int rand_int(int min, int max) {
+    inline int cpprand_int(int min, int max) {
         return (std::rand() % (max - min + 1)) + min;
     }
 
@@ -30,11 +31,23 @@ namespace GP {
         return static_cast<float>(rand()) / RAND_MAX;
     }
 
+    inline int fastrand_int(int min, int max) { 
+        static unsigned int g_seed = time(nullptr);
+        g_seed = (214013*g_seed+2531011); 
+        auto r = (g_seed>>16)&0x7FFF; 
+        return (r % (max - min + 1)) + min;
+    } 
+
+    inline int rand_int(int min, int max) {
+        return fastrand_int(min, max);
+    }
+
     /** Phenotype of a genome */
     class Phenotype {
     private:
         Graph *graph;  ///< The main graph for this phenotype
         int k;
+        std::vector<int> *mutatable; ///< Vector of nodes that can be mutated when using heuristics
 
         /**
          * DFS visit for fitness calculation
@@ -54,10 +67,21 @@ namespace GP {
         Phenotype(Graph *graph, int k);
 
         /**
+         * @brief Construct a new Phenotype object
+         * This constructor creates phenotypes with partially correct coloring
+         * @param graph Graph in which this phenotype is evolving
+         * @param k The amount of colors to color with
+         * @param correct_colors 
+         */
+        Phenotype(Graph *graph, int k, bool correct_colors);
+
+
+        /**
          * @brief Destroy the Phenotype object
          */
         ~Phenotype() {
             delete[] colors;
+            delete mutatable;
         }
 
         /**
@@ -68,6 +92,9 @@ namespace GP {
 
         /** Mutates the phenotype */
         void mutate();
+
+        /** Mutates the phenotype using heuristics */
+        void mutate_heuristic();
 
         /** 
          * Crosses over this phenotype with passed in one
@@ -99,7 +126,8 @@ namespace GP {
          * @param elitism If true, then best quality phenotype won't be evolved
          */
         Population(Graph *graph, size_t size, int k, 
-                   float mutate_chance=0.1f, float crossover_chance=0.75, bool elitism=true);
+                   float mutate_chance=0.1f, float crossover_chance=0.75, bool elitism=true,
+                   bool correct_phenos=false);
         /**
          * @brief Destroy the Population object
          */
@@ -114,6 +142,9 @@ namespace GP {
 
         /** Mutates phenotypes based on set chances and evolution attributes */
         void mutate();
+
+        /** Mutates heuristically phenotypes based on set chances and evolution attributes */
+        void mutate_heuristic();
 
         /** Crosses over phenotypes based on set evolution attributes */ 
         void crossover();

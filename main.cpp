@@ -6,15 +6,16 @@ int main(int argc, char *argv[]) {
     if (argc == 5 || argc == 6) {
         const char *con_file = (argc == 6 ? argv[5] : nullptr);
         auto g = new Graph(argv[1], con_file);
-        // TODO: Check conversion
+        GP::init();
         int k = atoi(argv[3]);
         if(argv[4] == std::string("-g")) {
             g->kcolor_greedy(k);
         }
         else if(argv[4] == std::string("-e")) {
-            GP::init();
-            // TODO: read the population size from argv
-            g->kcolor_gp(k, 50);
+            g->kcolor_gp(k, 20);
+        }
+        else if(argv[4] == std::string("-h")) {
+            g->kcolor_gp_heuristic(k, 20);
         }
         else {
             std::cerr << "ERROR: Unknwon algorithm '" << argv[3] << "'" << std::endl;

@@ -276,6 +276,47 @@ bool Graph::kcolor_gp(int k, size_t popul_size, int graph_logging_period) {
     return true;
 }
 
+bool Graph::kcolor_gp_heuristic(int k, size_t popul_size, int graph_logging_period) {
+    LOG("Heuristic genetic programming algorithm started");
+    // Enough colors for each vertex to have unique color
+    if(k >= size) {
+        // Every vertex can have its own color
+        for(int i = 0; i < size; ++i) {
+            colors[i] = i;
+        }
+        this->colors_used = size;
+        return true;
+    }
+    this->colors_used = k;
+
+    GP::Population population(this, popul_size, k, 0.12f, 0.8f, true, true);
+    bool done = false;
+    int iteration = 0;
+    while(!done) {
+        ++iteration;
+        LOG(std::string("Starting iteration ")+std::to_string(iteration));
+        auto coloring = population.evaluate();
+        if(coloring) {
+            // Correct coloring found
+            LOG("Found correct coloring");
+            done = true;
+            std::copy(coloring, coloring+size, this->colors);
+        }
+        // Crossover
+        population.crossover();
+        // Mutate
+        population.mutate_heuristic();
+
+        LOG(std::string("\tBest fintess: ")+std::to_string(population.quality[0]));
+        if(graph_logging_period != -1 && iteration % graph_logging_period == 0) {
+            std::copy(population.candidates->front()->colors, population.candidates->front()->colors+size, this->colors);
+            create_dot("partially_h_evolved", ("iteration"+std::to_string(iteration)+"_fit_"+std::to_string(population.quality[0])+".colored.dot").c_str());
+        }
+    }
+
+    return true;
+}
+
 bool Graph::kcolor_greedy(int k) {
 
     // TODO

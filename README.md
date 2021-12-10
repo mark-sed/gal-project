@@ -10,6 +10,7 @@ To compile the program from source use `make` command, which will create this pr
 4. algorithm to use for coloring, which can be one of the following:
     * `-g` - greedy algorithm,
     * `-e` - evolution algorithm using genetic programming,
+	* `-h` - heuristic evolution algorithm using genetic programming
 5. optionally constraints file can be passes in as the last argument to constrain certain vertices to set of colors.
 
 E.g.: `./gal graphs/big.dot output/big-colored.dot 6 -e`, which will color graph `graphs/big.dot` using evolution 

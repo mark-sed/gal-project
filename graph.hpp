@@ -101,6 +101,17 @@ public:
      * @return false otherwise
      */
     bool kcolor_gp(int k, size_t popul_size, int graph_logging_period=-1);
+
+    /**
+     * k-coloring genetic programming algorithm using heuristic guided evolution
+     * @param k Number of available colors
+     * @param popul_size The amount of phenotypes to evolve
+     * @param graph_logging_period How often should be evolved graph be logged into a dot file, when -1 then never.
+     *        This value is the modulo, so e.g. for 10, every 10th evolution will be logged
+     * @return true if the graph was colored
+     * @return false otherwise
+     */
+    bool kcolor_gp_heuristic(int k, size_t popul_size, int graph_logging_period=-1);
 };
 
 #endif//_GRAPH_HPP_
