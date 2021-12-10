@@ -248,7 +248,7 @@ bool Graph::kcolor_gp(int k, size_t popul_size, int graph_logging_period) {
     }
     this->colors_used = k;
 
-    GP::Population population(this, popul_size, k, 0.1f, 0.75f, true);
+    GP::Population population(this, popul_size, k, 0.12f, 0.8f, true);
     bool done = false;
     int iteration = 0;
     while(!done) {
