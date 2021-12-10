@@ -1,17 +1,20 @@
+/**
+ * @file graph.hpp
+ * @author Marek Sedlacek (xsedla1b@fit.vutbr.cz)
+ * @brief Graph unit
+ * @date November 2021
+ */
+
 #ifndef _GRAPH_HPP_
 #define _GRAPH_HPP_
 
 #include <vector>
+#include <list>
 #ifdef DEBUG
 #define LOG(stream) std::cout << "LOG: " << (stream) << std::endl;
 #else
 #define LOG(stream)
 #endif
-
-/** Genetic programming resources */
-namespace GP {
-    
-};
 
 /** Color representation */
 using Color = int;
@@ -25,10 +28,11 @@ private:
      * @brief DFS visit 
      * @param v Vertex to visit
      * @param visited Array of not/visited vertexes
+     * @param coloring Graph coloring
      * @return true If correct in this visits
      * @return false If incorrect in this visit
      */
-    bool correctness_dfs_visit(int v, bool **visited);
+    bool correctness_dfs_visit(int v, bool **visited, Color *coloring);
 public:
     int size;               ///< |V| - amount of vertices
     std::vector<int> *adj;  ///< Adjacency list
@@ -75,16 +79,28 @@ public:
 
     /**
      * Checks if the graph ic correctly k-colored (used colors <= k)
+     * @param colors Coloring of the graph, if nullptr then this graphs internal coloring is used
      * @return true if the graph is correctly colored
      */ 
-    bool is_correctly_colored();
+    bool is_correctly_colored(Color *colors=nullptr);
 
     /**
-     * Greedy k coloring algorithm
+     * Greedy k-coloring algorithm
      * @param k Number of available colors
      * @return true if graph was colored otherwise false
      */ 
     bool kcolor_greedy(int k);
+
+    /**
+     * k-coloring genetic programming algorithm
+     * @param k Number of available colors
+     * @param popul_size The amount of phenotypes to evolve
+     * @param graph_logging_period How often should be evolved graph be logged into a dot file, when -1 then never.
+     *        This value is the modulo, so e.g. for 10, every 10th evolution will be logged
+     * @return true if the graph was colored
+     * @return false otherwise
+     */
+    bool kcolor_gp(int k, size_t popul_size, int graph_logging_period=-1);
 };
 
 #endif//_GRAPH_HPP_

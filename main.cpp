@@ -1,5 +1,6 @@
 #include <iostream>
 #include "graph.hpp"
+#include "gp.hpp"
 
 int main(int argc, char *argv[]) {
     if (argc == 5 || argc == 6) {
@@ -9,15 +10,17 @@ int main(int argc, char *argv[]) {
         int k = atoi(argv[3]);
         if(argv[4] == std::string("-g")) {
             g->kcolor_greedy(k);
-            std::cout << "Graph correctly colored: " << std::boolalpha << g->is_correctly_colored() << std::endl;
         }
         else if(argv[4] == std::string("-e")) {
-
+            GP::init();
+            // TODO: read the population size from argv
+            g->kcolor_gp(k, 20);
         }
         else {
             std::cerr << "ERROR: Unknwon algorithm '" << argv[3] << "'" << std::endl;
             return 1;
         }
+        std::cout << "Graph correctly colored: " << std::boolalpha << g->is_correctly_colored() << std::endl;
         g->create_dot("colored_graph", argv[2]);
     }
     else {
