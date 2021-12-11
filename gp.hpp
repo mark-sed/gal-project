@@ -19,18 +19,42 @@
 /** Genetic programming resources */
 namespace GP {
     
+    /**
+     * @brief Initializer for GP
+     * Initialized RNG, should be called once before any GP resources are used
+     */
     inline void init() {
         std::srand(time(nullptr));
     }
 
+    /**
+     * @brief Random number generator
+     * Generates random number in <min; max> range using std rand function
+     * @param min Minimum possible random number value
+     * @param max Maximum possible random number value
+     * @return Random number in <min; max> range
+     */
     inline int cpprand_int(int min, int max) {
         return (std::rand() % (max - min + 1)) + min;
     }
 
+    /**
+     * @brief Random float generator 
+     * Generates random floats in <0; 1> range
+     * @return Random float 
+     */
     inline float rand_float() {
         return static_cast<float>(rand()) / RAND_MAX;
     }
 
+    /**
+     * @brief Fast random
+     * Random number generator that should be faster than standard rand() function
+     * Inspired by: https://stackoverflow.com/a/3747462
+     * @param min Minimum possible random number value
+     * @param max Maximum possible random number value
+     * @return Random number in <min; max> range
+     */
     inline int fastrand_int(int min, int max) { 
         static unsigned int g_seed = time(nullptr);
         g_seed = (214013*g_seed+2531011); 
@@ -38,8 +62,20 @@ namespace GP {
         return (r % (max - min + 1)) + min;
     } 
 
+    /**
+     * Random integer generator
+     * @param min Minimum possible random number value
+     * @param max Maximum possible random number value
+     * @return Random number in <min; max> range
+     */ 
     inline int rand_int(int min, int max) {
-        return fastrand_int(min, max);
+        #ifdef FASTRAND
+            // Fast random requested
+            return fastrand_int(min, max);
+        #else
+            // Use standard C(++) random
+            return cpprand_int(min, max);
+        #endif
     }
 
     /** Phenotype of a genome */
