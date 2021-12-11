@@ -1,3 +1,11 @@
+/**
+ * @file main.cpp
+ * @author Jiri Kristof (xkrist22@stud.fit.vutbr.cz)
+ * @brief Main unit
+ * @date December 2021
+ */
+
+
 #include <iostream>
 #include "graph.hpp"
 #include "gp.hpp"
@@ -8,8 +16,13 @@
 #include <ctype.h>
 #include <string.h>
 
+/**
+ * Method prints help and optionally print error leading 
+ * into printing help.
+ * 
+ * @param error_msg containts error message to be printed
+ */
 void print_help(const char* error_msg) {
-
     if (strcmp(error_msg, "")) {
         std::cout << "ERROR: " << error_msg << std::endl;
     }
