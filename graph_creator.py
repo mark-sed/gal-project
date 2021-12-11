@@ -38,13 +38,14 @@ from time import sleep
 
 
 class graph_creator:
+    __CONSTRAINTS_PER_COLLISION = 3
+
     @classmethod
     def validate_edge_num(cls, node_num: int, edge_num: int, sparse: bool = None) -> int:
         """
         Method check, if nuber of edges is bigger than smallest possible value
         and smaller than biggest possible value. If it is smaller/bigger, then
         method returns min/max number of edges, else returns specified number.
-
         Args:
             node_num (int): number of nodes in graph
             edge_num (int): number of edges in graph
@@ -56,7 +57,6 @@ class graph_creator:
             int: validated number in range <min;max>, if sparse is set to True,
                 then edge_num is in <min;q1>, if is set to True, edge_num is in
                 <q3;max> interval
-
         """
 
         max_edges = (node_num * (node_num - 1)) // 2
@@ -96,7 +96,6 @@ class graph_creator:
         """
         Method encodes graph in internal list into subset of dot
         format
-
         Args:
             graph (List[Tuple[int, int]]): list of pairs of nodes creating
                 an edge
@@ -118,7 +117,6 @@ class graph_creator:
     def generate_graph(self, node_num: int, edge_num: int, sparse: bool = None) -> str:
         """
         Method generates graph defined by number of nodes and edges
-
         Args:
             node_num (int): number of nodes
             edge_num (int): number of edges
@@ -140,6 +138,9 @@ class graph_creator:
         # check if constraints are satisfied
         edge_num = graph_creator.validate_edge_num(node_num, edge_num, sparse)
         
+        self.__node_num = node_num
+        self.__edge_num = edge_num
+
         # iterate until edge_num edges was not generated
         while (edges_completed < edge_num):
             # each iteration shuffle list of nodes       
@@ -165,7 +166,6 @@ class graph_creator:
         """
         Method encodes internal list of constraints into subset of dot
         format
-
         Args:
             constraints (List[Tule[int, int]]): list of pairs containing node and color constraint;
                 nodes can repeat in more pairs
@@ -184,16 +184,14 @@ class graph_creator:
         return str_constraints
 
     
-    def generate_constraints(self, node_num: int, constraints_num: int, constraints_colors: List[int], strict: bool = False) -> str:
+    def generate_constraints(self, node_num: int, constraints_num: int, constraints_colors_num: int, strict: bool = False, collision_num: int = 0) -> str:
         """
         Method generates constraints according to given arguments. 
-
         Args:
             node_num (int): number of nodes in graph
             constraints_num (int): number of contraints to be generated
             constraints_colors (List[int]): list of supported colors
             strict (bool): if flag is set, then color constraints is generated so all these can be fulfill
-
         Returns:
             str: dot representation of constraints
         """
@@ -201,22 +199,31 @@ class graph_creator:
         constraints = []
         completed_num = 0
 
-        # remove duplicate colors
-        constraints_colors = list(dict.fromkeys(constraints_colors))
-
-        if len(constraints_colors) < 4:
-            raise ValueError("You must define at least 4 different colors")
-
-        if len(constraints_colors) * node_num < constraints_num:
-            raise ValueError("Cannot create {} constraints, maximum for this graph is {}".format(constraints_num, len(constraints_colors) * node_num))
+        if strict:
+            # check maximum colors needed for constraints -- maximum edges from node + 1
+            for node in range(node_num):
+                neighbors = []
+                for neighbor in [x for x in self.__graph if x[0] == node]:
+                    neighbors.append(neighbor[1])
+                for neighbor in [x for x in self.__graph if x[1] == node]:
+                    neighbors.append(neighbor[0])
+                if len(neighbors) > constraints_colors_num:
+                    constraints_colors_num = len(neighbors)
         
-        if len(constraints_colors) * node_num == constraints_num:
-            # there is all constraints (every node is constrained to every color), aka no constraints
-            self.__constraints_str = graph_creator.encode_constraints([])
-            return self.__constraints_str
+        # save number of colors to stats
+        self.__color_num = constraints_colors_num
 
-        while(completed_num < constraints_num):
-            color = random.sample(constraints_colors, 1)[0]
+        if collision_num != 0 and constraints_num - collision_num < node_num * constraints_colors_num:
+            constraints_num = (node_num * constraints_colors_num) - collision_num
+
+        if constraints_num + collision_num > constraints_colors_num * node:
+            constraints_num = (constraints_colors_num * node) - collision_num
+
+        # save number of constraints to stats
+        self.__constraints_num = constraints_num
+
+        while completed_num < constraints_num - collision_num:
+            color = random.randint(0,constraints_colors_num-1)
             node = random.randint(0,node_num-1)
             if not strict and (node, color) not in constraints:
                 # non-strict 
@@ -246,6 +253,49 @@ class graph_creator:
                     constraints.append((node, color))
                     completed_num += 1
 
+        completed_num = 0
+        while completed_num < collision_num:
+            # take random node
+            node = random.randint(0,node_num-1)
+            
+            # get colors constraints of nodes
+            node_colors = []
+            for constraint in [c for c in constraints if c[0] == node]:
+                node_colors.append(constraint[1])
+
+            # if there is no constraint, then do not risk and select another node :-)
+            if len(node_colors) == 0:
+                continue
+
+            # get all colors that can be used in collision
+            collision_colors = []
+            for neighbor in [x for x in self.__graph if x[0] == node]:
+                for color in [c for c in constraints if c[0] == neighbor[1]]:
+                    collision_colors.append(color[1])
+            for neighbor in [x for x in self.__graph if x[1] == node]:
+                for color in [c for c in constraints if c[0] == neighbor[0]]:
+                    collision_colors.append(color[1])
+
+            # select specific collision number (if there is any new)
+            collision_colors = [c for c in collision_colors if c not in node_colors]
+            if collision_colors != []:
+                color = random.sample(collision_colors, 1)[0]
+                constraints.insert(0, (node, color))
+                completed_num += 1
+
+        # count collision stat
+        collisions = 0
+        for edge in self.__graph:
+            starting_constraint_colors = []
+            for color in [c for c in constraints if c[0] == edge[0]]:
+                starting_constraint_colors.append(color[1])
+            ending_constraint_colors = []
+            for color in [c for c in constraints if c[0] == edge[1]]:
+                ending_constraint_colors.append(color[1])
+            
+            collisions += len([c for c in starting_constraint_colors if c in ending_constraint_colors])
+
+        self.__collisions = collisions
         self.__constraints_str = graph_creator.encode_constraints(constraints)
         return self.__constraints_str
 
@@ -254,7 +304,6 @@ class graph_creator:
     def write_data(csl, data: str, filename: str) -> None:
         """
         Method saves graph into specified file
-
         Args:
             graph (str): dot representation of graph
             filename (str): name of file into which graph will be saved
@@ -266,6 +315,16 @@ class graph_creator:
 
     def __str__(self):
         return self.__graph_str + self.__constraints_str
+
+
+    def print_stats(self):
+        print("================ STATS ================")
+        print("Number of nodes: {}".format(self.__node_num))
+        print("Number of edges: {}".format(self.__edge_num))
+        print("Number of constraints: {}".format(self.__constraints_num))
+        print("Number of colors: {}".format(self.__color_num))
+        print("Number of collisions: {}".format(self.__collisions))
+        print("Density of graph: {:.3f} %".format((200 * self.__edge_num)/(self.__node_num * (self.__node_num -1))))
 
 
 if __name__ == "__main__":
@@ -306,12 +365,11 @@ if __name__ == "__main__":
         help="number of constraints to be generated, defaultly 0"
     )
     parser.add_argument(
-        "--constraints-colors", "-cc",
+        "--constraints-colors-num", "-ccn",
         action="store",
-        dest="constraints_colors",
-        default=[0, 1, 2, 3],
-        nargs="+",
-        help="list of colors that can be used in constraints, defaultly 0 1 2 3"
+        dest="constraints_colors_num",
+        default=1,
+        help="number of colors used in constraints, defaultly 4"
     )
     parser.add_argument(
         "--strict-constraint-fulfill", "-scf",
@@ -341,14 +399,30 @@ if __name__ == "__main__":
         default=False,
         help="if flag is set, then results will be both saved into files and written to stdout"
     )
-
+    parser.add_argument(
+        "--collision-num", "-con",
+        action="store",
+        dest="collision_num",
+        default=0,
+        help="Minimum number of collisions to be generated, defaultly 0 (note that this is minimum, not maximum)"
+    )
+    parser.add_argument(
+        "--stats", "-s",
+        action="store_true",
+        dest="print_stats",
+        default=False,
+        help="If flag is set, then statistics about generated graph will be printed"
+    )
 
     arguments = parser.parse_args()
 
     gc = graph_creator()
 
     graph_creator.write_data(gc.generate_graph(int(arguments.nodes), int(arguments.edges), arguments.sparse), arguments.graph_filename)
-    graph_creator.write_data(gc.generate_constraints(int(arguments.nodes), int(arguments.constraints_num), arguments.constraints_colors, arguments.strict_constraint_fulfill), arguments.constraints_filename)
+    graph_creator.write_data(gc.generate_constraints(int(arguments.nodes), int(arguments.constraints_num), int(arguments.constraints_colors_num), arguments.strict_constraint_fulfill, int(arguments.collision_num)), arguments.constraints_filename)
     
     if arguments.print:
         print(gc)
+
+    if arguments.print_stats:
+        gc.print_stats()
