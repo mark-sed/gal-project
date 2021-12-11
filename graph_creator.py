@@ -216,8 +216,8 @@ class graph_creator:
         if collision_num != 0 and constraints_num - collision_num < node_num * constraints_colors_num:
             constraints_num = (node_num * constraints_colors_num) - collision_num
 
-        if constraints_num + collision_num > constraints_colors_num * node:
-            constraints_num = (constraints_colors_num * node) - collision_num
+        if constraints_num + collision_num > constraints_colors_num * node_num:
+            constraints_num = (constraints_colors_num * node_num) - collision_num
 
         # save number of constraints to stats
         self.__constraints_num = constraints_num
