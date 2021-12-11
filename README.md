@@ -36,13 +36,16 @@ Graph generator can be used for easy generating of graph in the input format. Py
 - `-sf/--sparse-flag` specifies, that desired graph should be "sparse",
 - `-df/--dense-flag` specifies, that desired graph should be "dense",
 - `-cn/--constraints-num <int>` defines number of constraints to be ,generated, defaultly 0,
-- `-cc/--constraints-colors <list>` list of colors to be used in constraints, there must be at least 4 different colors,
+- `-ccn/--constraints-colors-num <int>` number of colors to be used in constraints,
 - `-scf/--strict-constraint-fulfill` if flag is set, then constraints are generated so that there is a solution of graph coloring,
 - `-gf/--graph-filename <str>` defines name of file into which graph dot representation will be saved, defaultly `graph.dot` ,
 - `-cf/--constraints-filename <str>` defines name of file into which constraints dot representation will be saved, defaultly `constraints.dot`,
-- `-p/--print` if flag is set, then graph and constraints are both saved into specified files and printed to stdout. 
+- `-p/--print` if flag is set, then graph and constraints are both saved into specified files and printed to stdout,
+- `-con/--collision-num <int>` defines minimum number of collisions to be generated in graph, defaultly 0 (which does not mean there will be no collision),
+- `-s/--stats` if flag is set, then statistics about generated graph will be printed,
+- `-h/--help` prints help for the graph generator script. 
 
-Note that output graph is always connected, meaning there is always n-1 edges (where n is number of nodes). If number of edges is not specified and no flag is set, then output graph is degraded to linked list. Maximum constraints that can be generated is defined as `nodes_number * len(constraints_colors)`, e.g. for 5 nodes and 4 colors, 20 is maximum number of constraints that can be generated. 
+Note that output graph is always connected, meaning there is always n-1 edges (where n is number of nodes). If number of edges is not specified and no flag is set, then output graph is degraded to linked list. Maximum constraints that can be generated is defined as `nodes_number * constraints_colors_num`, e.g. for 5 nodes and 4 colors, 20 is maximum number of constraints that can be generated. 
 
 ## Example input graph
 ```
