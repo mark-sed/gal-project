@@ -32,6 +32,9 @@ void print_help(const char* error_msg) {
                 << "\tSet number of colors used for graph coloring:" << std::endl
                 << "\t\t--colors <int>" << std::endl
 
+                << "\tSet population used for graph coloring:" << std::endl
+                << "\t\t--population <int>" << std::endl
+
                 << "\tOptionally, set file with constraints:" << std::endl
                 << "\t\t--constraints <input constraints filename>" << std::endl
                 << "\t\tFormat of <input constraints filename> is described in README" << std::endl
@@ -57,6 +60,7 @@ int main(int argc, char *argv[]) {
     char* benchmark_file = nullptr;
     char* output_file = nullptr;
     int colors = 0;
+    int population = 0;
 
     struct option  long_options[] = {
         {"greedy", no_argument, nullptr, 'g'},
@@ -67,6 +71,7 @@ int main(int argc, char *argv[]) {
         {"benchmark", required_argument, nullptr, 'b'},
         {"output", required_argument, nullptr, 'o'},
         {"colors", required_argument, nullptr, 'l'},
+        {"population", required_argument, nullptr, 'p'},
         {"help", no_argument, nullptr, 'h'},
         {0, 0, 0, 0} // ending element to prevent "segmentation fault"
     };
@@ -155,6 +160,20 @@ int main(int argc, char *argv[]) {
                 }
                 colors = atoi(optarg);
                 break;
+            
+            case 'p':
+                // check if number of colors was not defined already
+                if (population != 0) {
+                    print_help("Number of population defined multiple times");
+                } 
+                // check if given value is number
+                for (size_t i = 0; i < strlen(optarg); i++) {
+                    if (!isdigit(optarg[i])) {
+                        print_help("Number of population must be number");
+                    }
+                }
+                population = atoi(optarg);
+                break;
 
             case 'h':
                 print_help("");
@@ -181,8 +200,11 @@ int main(int argc, char *argv[]) {
         if (graph_file == nullptr) {
             print_help("No graph file selected");
         }
-        if (colors == 0) {
-            print_help("Number of colors not set");
+        if (colors <= 0) {
+            print_help("Number of colors not set or is negative");
+        }
+        if (population <= 0 && (algorithm == 'e' || algorithm == 'h')) {
+            print_help("Number of population not set or is negative");
         }
     }
     if (output_file == nullptr) {
@@ -196,11 +218,11 @@ int main(int argc, char *argv[]) {
     } else if (algorithm == 'e') {
         auto g = new Graph(graph_file, constraints_file);
         GP::init();
-        g->kcolor_gp(colors, 20);
+        g->kcolor_gp(colors, population);
     } else if (algorithm == 'h') {
         auto g = new Graph(graph_file, constraints_file);
         GP::init();
-        g->kcolor_gp_heuristic(colors, 20);
+        g->kcolor_gp_heuristic(colors, population);
     } else {
         ; // TODO benchmark
     }
