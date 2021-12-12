@@ -7,14 +7,18 @@
 
 
 #include <iostream>
-#include "graph.hpp"
-#include "gp.hpp"
-#include <chrono>
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <getopt.h> 
 #include <ctype.h>
 #include <string.h>
+#include "graph.hpp"
+#include "gp.hpp"
+#include "benchmark.hpp"
+
+#define POPULATION_NUM 20
+#define MALLOC_FAILURE 2
+#define ARGUMENTS_FAILURE 1
 
 /**
  * Method prints help and optionally print error leading 
@@ -58,7 +62,7 @@ void print_help(const char* error_msg) {
                 << "\t\tNote that you still must define output file, where statistics in csv format will be printed" << std::endl
     ;
 
-    exit(1);
+    exit(ARGUMENTS_FAILURE);
 }
 
 int main(int argc, char *argv[]) {
@@ -73,7 +77,7 @@ int main(int argc, char *argv[]) {
     char* benchmark_file = nullptr;
     char* output_file = nullptr;
     int colors = 0;
-    int population = 0;
+    int population = POPULATION_NUM;
 
     struct option  long_options[] = {
         {"greedy", no_argument, nullptr, 'g'},
@@ -130,6 +134,10 @@ int main(int argc, char *argv[]) {
                 algorithm = 'b';
                 // save file with benchmark settings
                 benchmark_file = (char*) malloc(sizeof(char) * strlen(optarg));
+                if (benchmark_file == NULL) {
+                    free(benchmark_file);
+                    return MALLOC_FAILURE;
+                }
                 strcpy(benchmark_file, optarg);
                 break;
 
@@ -139,6 +147,10 @@ int main(int argc, char *argv[]) {
                     print_help("Graph file set multiple times");
                 }
                 graph_file = (char*) malloc(sizeof(char) * strlen(optarg));
+                if (graph_file == NULL) {
+                    free(graph_file);
+                    return MALLOC_FAILURE;
+                }
                 strcpy(graph_file, optarg);
                 break;
             
@@ -148,6 +160,10 @@ int main(int argc, char *argv[]) {
                     print_help("Constraints file set multiple times");
                 }
                 constraints_file = (char*) malloc(sizeof(char) * strlen(optarg));
+                if (constraints_file == NULL) {
+                    free(constraints_file);
+                    return MALLOC_FAILURE;
+                }
                 strcpy(constraints_file, optarg);
                 break;
 
@@ -157,6 +173,10 @@ int main(int argc, char *argv[]) {
                     print_help("Output file set multiple times");
                 }
                 output_file = (char*) malloc(sizeof(char) * strlen(optarg));
+                if (output_file == NULL) {
+                    free(output_file);
+                    return MALLOC_FAILURE;
+                }
                 strcpy(output_file, optarg);
                 break;
 
@@ -176,7 +196,7 @@ int main(int argc, char *argv[]) {
             
             case 'p':
                 // check if number of colors was not defined already
-                if (population != 0) {
+                if (population != POPULATION_NUM) {
                     print_help("Number of population defined multiple times");
                 } 
                 // check if given value is number
@@ -216,9 +236,6 @@ int main(int argc, char *argv[]) {
         if (colors <= 0) {
             print_help("Number of colors not set or is negative");
         }
-        if (population <= 0 && (algorithm == 'e' || algorithm == 'h')) {
-            print_help("Number of population not set or is negative");
-        }
     }
     if (output_file == nullptr) {
         print_help("No output file selected");
@@ -237,8 +254,15 @@ int main(int argc, char *argv[]) {
         GP::init();
         g->kcolor_gp_heuristic(colors, population);
     } else {
-        ; // TODO benchmark
+        auto b = new Benchmark();
+        b->run_benchmark(benchmark_file, output_file);
     }
+
+    // free used memory
+    free(graph_file);
+    free(constraints_file);
+    free(output_file);
+    free(benchmark_file);
 
     return 0;
 }
