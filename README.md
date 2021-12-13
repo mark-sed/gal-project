@@ -80,7 +80,7 @@ This file sets the following constraints:
 * Vertex 4 can have any color.
 
 # Benchmark
-Benchmark is speciall mode of the app, in which algorithms can be evaluated. For statistics visualisation, use script `evaluate.py`. This script is described below.
+Benchmark is speciall mode of the app, in which algorithms can be evaluated. For statistics visualisation, use script `evaluate.py`. This script is described below. Line charts from documentation was generated using `evaluate.py` module by script `plot_doc.py`. Creation of input csv for benchmarking was automatized by script `csv_creator.py`.
 
 ## Input file format
 Benchmark input file uses csv format, where lines are options for one benchmarking. Each file must define these values oin given order:
@@ -99,7 +99,16 @@ Output file is in csv format and contains results of benchmark. Each line has th
 1. `id`: identificator of given benchmark settings (used as foreign key to match exactly one input benchmark settings), note that in output file, `id` is not unique,
 2. `time`: column contains information about algorithm duration
 3. `success`: bool value defining if coloring was sucessfull or not
+4. `node_num`: number of nodes of graph used in benchmark
+4. `edge_num`: number of edges of graph used in benchmark
 // TODO add something more??
 
 ## Script `evaluate.py`
-This script can be used to visualise results of benchmarking. TODO
+This script can be used to visualise results of benchmarking. Script will plot line chart according to given arguments:
+- `-bi/--benchmark-input`: defines file used as input to gal.out in mode benchmark, defaultly `in.csv`
+- `-bo/--benchmark-output`: defines file used as output from gal.out in mode benchmark, defaultly `out.csv`
+- `-si/--start-index`: first index of relevant data, mandatory argument
+- `-ei/--ending-index`: last index of relevant data, mandatory argument
+- - `-x/--x-axis-var`: defines variable which will be ploted to x axe, mandatory argument
+- - `-y/--y-axis-var`: defines variable which will be ploted to y axe, mandatory argument
+- `-of/--output-file`: defines output file into which line chart will be plotted, defaultly `out.png`
