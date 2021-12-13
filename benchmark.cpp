@@ -108,6 +108,12 @@ Benchmark::results_t Benchmark::bench_run(bench_run_t options) {
     }
     // unoriented graph - for 1 edge there is 2 records
     results.edge_num /= 2;
+    // save number of edges to result
+    results.constraint_num = 0;
+    // for each node, count number of neighbors
+    for(int i = 0; i < results.node_num; ++i) {
+        results.constraint_num += g->constraint[i].size();
+    }
 
     // run selected algorithm with given options
     if (options.algorithm == 'g') {

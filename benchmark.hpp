@@ -47,6 +47,7 @@ private:
         bool success;
         int node_num;
         int edge_num;
+        int constraint_num;
         // TODO add something???
     };
 
