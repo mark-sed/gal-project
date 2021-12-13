@@ -101,7 +101,7 @@ Output file is in csv format and contains results of benchmark. Each line has th
 3. `success`: bool value defining if coloring was sucessfull or not
 4. `node_num`: number of nodes of graph used in benchmark
 4. `edge_num`: number of edges of graph used in benchmark
-// TODO add something more??
+5. `collision_num`: number of collisions generated for graph
 
 ## Script `evaluate.py`
 This script can be used to visualise results of benchmarking. Script will plot line chart according to given arguments:
