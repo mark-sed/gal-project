@@ -80,7 +80,7 @@ This file sets the following constraints:
 * Vertex 4 can have any color.
 
 # Benchmark
-Benchmark is speciall mode of the app, in which algorithms can be evaluated. For statistics visualisation, use script `evaluate.py`. This script is described below. Line charts from documentation was generated using `evaluate.py` module by script `plot_doc.py`. Creation of input csv for benchmarking was automatized by script `csv_creator.py`.
+Benchmark is speciall mode of the app, in which algorithms can be evaluated. For statistics visualisation, use script `evaluate.py`. This script is described below. Line charts from documentation was generated using `evaluate.py` module by script `plot_doc.py`. Creation of input csv for benchmarking was automatized by script `csv_creator.py`. You can find test files with graphs and constraints at URL http://www.stud.fit.vutbr.cz/~xkrist22/GAL/test_data/. These can be used with benchmark test input file  `in.csv`.
 
 ## Input file format
 Benchmark input file uses csv format, where lines are options for one benchmarking. Each file must define these values oin given order:
