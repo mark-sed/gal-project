@@ -45,6 +45,8 @@ private:
         int identificator;
         float time;
         bool success;
+        int node_num;
+        int edge_num;
         // TODO add something???
     };
 

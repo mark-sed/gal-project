@@ -30,6 +30,11 @@ void Benchmark::run_benchmark(const char* input_file, const char* output_file) {
     // regex for checking line correctness
     std::regex line_regex("^[0-9]+,[geh],[-._A-Za-z+-9]{1,255},[-._A-Za-z+-9]{1,255},[0-9]+,[0-9]+,[0-9]+$");
 
+    // remove existing data in output file
+    std::ofstream output_file_hanlder;
+    output_file_hanlder.open(output_file, std::ofstream::out | std::ofstream::trunc);
+    output_file_hanlder.close();
+
     while (getline(input_file_handler, bench_line)) {
         // if line is not correctly written, then skip it
         if (!std::regex_search(bench_line, line_regex)) {
@@ -91,6 +96,19 @@ void Benchmark::run_benchmark(const char* input_file, const char* output_file) {
 Benchmark::results_t Benchmark::bench_run(bench_run_t options) {
     auto g = new Graph(options.graph_file, options.constraints_file);
 
+    // create result structure and fill static values
+    results_t results;
+    // save number of vertices to result
+    results.node_num = g->size;
+    // save number of edges to result
+    results.edge_num = 0;
+    // for each node, count number of neighbors
+    for(int i = 0; i < results.node_num; ++i) {
+        results.edge_num += g->adj[i].size();
+    }
+    // unoriented graph - for 1 edge there is 2 records
+    results.edge_num /= 2;
+
     // run selected algorithm with given options
     if (options.algorithm == 'g') {
         // run algorithm and count time spended in function
@@ -100,9 +118,12 @@ Benchmark::results_t Benchmark::bench_run(bench_run_t options) {
 
         // get results of run
         std::chrono::duration<float, std::milli> elapsed = end - start;
-        results_t results;
+
+        // set identificator of run to result
         results.identificator = options.identificator;
+        // set elapsed time to result
         results.time = elapsed.count();
+        // set info about correctness coloring to result
         results.success = g->is_correctly_colored();
 
         return results;
@@ -115,9 +136,11 @@ Benchmark::results_t Benchmark::bench_run(bench_run_t options) {
 
         // get results of run
         std::chrono::duration<float, std::milli> elapsed = end - start;
-        results_t results;
+        // set identificator of run to result
         results.identificator = options.identificator;
+        // set elapsed time to result
         results.time = elapsed.count();
+        // set info about correctness coloring to result
         results.success = g->is_correctly_colored();
 
         return results;
@@ -130,9 +153,11 @@ Benchmark::results_t Benchmark::bench_run(bench_run_t options) {
 
         // get results of run
         std::chrono::duration<float, std::milli> elapsed = end - start;
-        results_t results;
+        // set identificator of run to result
         results.identificator = options.identificator;
+        // set elapsed time to result
         results.time = elapsed.count();
+        // set info about correctness coloring to result
         results.success = g->is_correctly_colored();
 
         return results;
@@ -145,7 +170,11 @@ void Benchmark::write_results(const char* output_file, results_t results) {
     output_file_hanlder.open(output_file, std::ios_base::app);
 
     // append new data in csv format
-    output_file_hanlder << results.identificator << "," << results.time << "," << results.success << std::endl;
+    output_file_hanlder << results.identificator << ","
+                        << results.time << "," 
+                        << results.success << ","
+                        << results.node_num << ","
+                        << results.edge_num << std::endl;
 
     // close file after write
     output_file_hanlder.close();
