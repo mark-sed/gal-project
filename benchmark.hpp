@@ -9,6 +9,7 @@
 #define _BENCHMARK_HPP_
 
 #define DELIMITER ','
+#define COUNTER_LIMIT 1
 
 /** Graph representation using adjacency list */
 class Benchmark {

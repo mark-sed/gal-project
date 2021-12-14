@@ -28,19 +28,29 @@ void Benchmark::run_benchmark(const char* input_file, const char* output_file) {
     std::ifstream input_file_handler(input_file);
     std::string bench_line;
     // regex for checking line correctness
-    std::regex line_regex("^[0-9]+,[geh],[-._A-Za-z+-9]{1,255},[-._A-Za-z+-9]{1,255},[0-9]+,[0-9]+,[0-9]+$");
+    std::regex line_regex("^[0-9]+,[geh],[-._/A-Za-z+-9]+,[-._/A-Za-z+-9]+,[0-9]+,[0-9]+,[0-9]+$");
 
     // remove existing data in output file
     std::ofstream output_file_hanlder;
     output_file_hanlder.open(output_file, std::ofstream::out | std::ofstream::trunc);
     output_file_hanlder.close();
 
+    // this serves as notificator that benchmark is not stuck
+    int counter = 0;
+    std::cout << "Progress: ";
+    std::cout.flush();
     while (getline(input_file_handler, bench_line)) {
+        // second part of progress bar
+        if (counter >= COUNTER_LIMIT) {
+            counter = 0;
+            std::cout << "|";
+            std::cout.flush();
+        }
+        counter++;
         // if line is not correctly written, then skip it
         if (!std::regex_search(bench_line, line_regex)) {
             continue;
         }
-
         // parse each line - each column value will be stored in vector element in previous order
         std::vector<std::string> input_data;        
         std::istringstream string_stream(bench_line);
@@ -85,12 +95,15 @@ void Benchmark::run_benchmark(const char* input_file, const char* output_file) {
         options.repetition = std::stoi(input_data[6]);
         // no check performed, so benchmark can be "commented out" using 0 value
 
-        // repeat algorithm n-times
         for (int i = 0; i < options.repetition; i++) {
+            if (options.algorithm == 'e') {
+                break;
+            }
             results_t results = bench_run(options);
             write_results(output_file, results);
         }
     }
+    std::cout << std::endl;
 }
 
 Benchmark::results_t Benchmark::bench_run(bench_run_t options) {
@@ -108,9 +121,9 @@ Benchmark::results_t Benchmark::bench_run(bench_run_t options) {
     }
     // unoriented graph - for 1 edge there is 2 records
     results.edge_num /= 2;
-    // save number of edges to result
+    // save number of constraints to result
     results.constraint_num = 0;
-    // for each node, count number of neighbors
+    // for each node, count number of constraints
     for(int i = 0; i < results.node_num; ++i) {
         results.constraint_num += g->constraint[i].size();
     }
@@ -180,7 +193,8 @@ void Benchmark::write_results(const char* output_file, results_t results) {
                         << results.time << "," 
                         << results.success << ","
                         << results.node_num << ","
-                        << results.edge_num << std::endl;
+                        << results.edge_num << ","
+                        << results.constraint_num << std::endl;
 
     // close file after write
     output_file_hanlder.close();
