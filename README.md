@@ -80,10 +80,10 @@ This file sets the following constraints:
 * Vertex 4 can have any color.
 
 # Benchmark
-Benchmark is speciall mode of the app, in which algorithms can be evaluated. For statistics visualisation, use script `evaluate.py`. This script is described below. Line charts from documentation was generated using `evaluate.py` module by script `plot_doc.py`. Creation of input csv for benchmarking was automatized by script `csv_creator.py`. You can find test files with graphs and constraints at URL http://www.stud.fit.vutbr.cz/~xkrist22/GAL/test_data/. These can be used with benchmark test input file  `in.csv`.
+Benchmark is speciall mode of the app, in which algorithms can be evaluated. For statistics visualisation, use script `evaluate.py`. This script is described below. Creation of input csv for benchmarking was automatized by script `csv_creator.ipynb`. You can find test files with graphs and constraints at URL http://www.stud.fit.vutbr.cz/~xkrist22/GAL/test_data/. These can be used with benchmark test input file.
 
 ## Input file format
-Benchmark input file uses csv format, where lines are options for one benchmarking. Each file must define these values oin given order:
+Benchmark input file uses extended csv format, where lines are options for one benchmarking. Each file must define these values oin given order:
 1. `id`: unique integer identificator of given benchmark,
 2. `algorithm`: one character specifiing algorithm to be used, should be one of the value `g`, `e` or `h`,
 3. `graph_file`: string defining name of file in which graph for benchmarking is used,
@@ -92,7 +92,14 @@ Benchmark input file uses csv format, where lines are options for one benchmarki
 6. `population`: integer number defining population size, if `g` algorithm is set, then number will not be used (but still there must be some number),
 7. `repetition`: integer number defines how many times each benchmark should be realised.
 
-Lines which does not meet input format are skipped.
+Lines which does not meet input format are skipped. You can use line comments, which will be printed to stdout during processing input csv file. These comments starts with `#` symbol. Example of input file is below:
+```
+# dependency between duration of each algorithm and number of nodes in sparse graph
+0,g,bench_graphs/sparse_20.dot,x,6,0,5
+1,e,bench_graphs/sparse_20.dot,x,6,20,5
+2,h,bench_graphs/sparse_20.dot,x,6,20,5
+```
+With this input file, greedy algorithm and evolution with heuristic will be run `5` times (evolution is run only once). As input graph is used graph stored in file `bench_graphs/sparse_20.dot`. No constraint file is set. For coloring will be used `6` colors, population is `20`.
 
 ## Output file format
 Output file is in csv format and contains results of benchmark. Each line has these columns:
@@ -101,7 +108,7 @@ Output file is in csv format and contains results of benchmark. Each line has th
 3. `success`: bool value defining if coloring was sucessfull or not
 4. `node_num`: number of nodes of graph used in benchmark
 4. `edge_num`: number of edges of graph used in benchmark
-5. `collision_num`: number of collisions generated for graph
+5. `constaints_num`: number of constraints generated for graph
 
 ## Script `evaluate.py`
 This script can be used to visualise results of benchmarking. Script will plot line chart according to given arguments:

@@ -67,9 +67,8 @@ class Evaluate:
         self.__df = self.__df.join(self.__in_df.set_index("id"), on='id')
         self.__df = self.__df.drop(["graph_file", "constraints_file"], axis=1)
 
-        print(self.__df)
 
-    def plot_line_chart(self, start_id: int, stop_id: int, x_axe_var: str, y_axe_var: str, output_filename: str) -> None:
+    def plot_line_chart(self, start_id: int, stop_id: int, x_axe_var: str, y_axe_var: str, output_filename: str, title: str = None) -> None:
         """
         Method plots graph using values describing values to be used and variables to be plotted
 
@@ -93,7 +92,10 @@ class Evaluate:
         plt.legend()
         plt.xlabel(self.__labels[x_axe_var])
         plt.ylabel(self.__labels[y_axe_var])
+        if title:
+            plt.title(title)
         plt.savefig(output_filename)
+        plt.clf()
 
 
 if __name__ == "__main__":
@@ -122,7 +124,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ending-index", "-ei",
         action="store",
-        dest="stop_index",
+        dest="end_index",
         required=True,
         help="Define ending index from which data will be taken"
     )
@@ -151,4 +153,4 @@ if __name__ == "__main__":
     arguments = parser.parse_args()
 
     e = Evaluate(arguments.benchmark_input, arguments.benchmark_output)
-    e.plot_line_chart(arguments.start_inex, arguments.end_index, arguments.x_axe, arguments.y_axe, arguments.output_file)
+    e.plot_line_chart(int(arguments.start_index), int(arguments.end_index), arguments.x_axe, arguments.y_axe, arguments.output_file)
