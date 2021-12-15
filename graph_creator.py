@@ -127,6 +127,7 @@ class graph_creator:
         Returns:
             str: graph encoded in subset of dot format (explained more in doc)
         """
+
         # there must be at least one node, otherwise return empty graph
         if node_num <= 0:
             return graph_creator.encode_graph([])
@@ -158,6 +159,7 @@ class graph_creator:
         # save graph for constraint generator
         self.__graph = graph
         self.__graph_str = graph_creator.encode_graph(graph)
+        self.min_colors_to_use = self.get_minimum_colors_needed(node_num)
         return self.__graph_str
 
 
@@ -184,6 +186,21 @@ class graph_creator:
         return str_constraints
 
     
+    def get_minimum_colors_needed(self, node_num: int):
+        # check maximum colors needed for constraints -- maximum edges from node + 1
+        min_colors_needed = 0
+        for node in range(node_num):
+            neighbors = []
+            for neighbor in [x for x in self.__graph if x[0] == node]:
+                neighbors.append(neighbor[1])
+            for neighbor in [x for x in self.__graph if x[1] == node]:
+                neighbors.append(neighbor[0])
+            if len(neighbors) > min_colors_needed:
+                min_colors_needed = len(neighbors)
+        
+        return min_colors_needed
+
+
     def generate_constraints(self, node_num: int, constraints_num: int, constraints_colors_num: int, strict: bool = False, collision_num: int = 0) -> str:
         """
         Method generates constraints according to given arguments. 
@@ -200,15 +217,8 @@ class graph_creator:
         completed_num = 0
 
         if strict:
-            # check maximum colors needed for constraints -- maximum edges from node + 1
-            for node in range(node_num):
-                neighbors = []
-                for neighbor in [x for x in self.__graph if x[0] == node]:
-                    neighbors.append(neighbor[1])
-                for neighbor in [x for x in self.__graph if x[1] == node]:
-                    neighbors.append(neighbor[0])
-                if len(neighbors) > constraints_colors_num:
-                    constraints_colors_num = len(neighbors)
+            constraints_colors_num = self.get_minimum_colors_needed(node_num)
+        self.min_colors_to_use = self.get_minimum_colors_needed(node_num)
         
         # save number of colors to stats
         self.__color_num = constraints_colors_num
@@ -216,8 +226,8 @@ class graph_creator:
         if collision_num != 0 and constraints_num - collision_num < node_num * constraints_colors_num:
             constraints_num = (node_num * constraints_colors_num) - collision_num
 
-        if constraints_num + collision_num > constraints_colors_num * node:
-            constraints_num = (constraints_colors_num * node) - collision_num
+        if constraints_num + collision_num > constraints_colors_num * node_num:
+            constraints_num = (constraints_colors_num * node_num) - collision_num
 
         # save number of constraints to stats
         self.__constraints_num = constraints_num
@@ -324,6 +334,7 @@ class graph_creator:
         print("Number of constraints: {}".format(self.__constraints_num))
         print("Number of colors: {}".format(self.__color_num))
         print("Number of collisions: {}".format(self.__collisions))
+        print("Recommended number of colors: {}".format(self.min_colors_to_use))
         print("Density of graph: {:.3f} %".format((200 * self.__edge_num)/(self.__node_num * (self.__node_num -1))))
 
 

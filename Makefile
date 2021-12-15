@@ -25,3 +25,6 @@ debug:
 
 dot:
 	dot $(DOT) -Tpng -o $(DOT).png
+
+install:
+	python -m pip install -r requirements.txt
