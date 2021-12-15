@@ -107,8 +107,8 @@ Output file is in csv format and contains results of benchmark. Each line has th
 2. `time`: column contains information about algorithm duration
 3. `success`: bool value defining if coloring was sucessfull or not
 4. `node_num`: number of nodes of graph used in benchmark
-4. `edge_num`: number of edges of graph used in benchmark
-5. `constaints_num`: number of constraints generated for graph
+5. `edge_num`: number of edges of graph used in benchmark
+6. `constaints_num`: number of constraints generated for graph
 
 ## Script `evaluate.py`
 This script can be used to visualise results of benchmarking. Script will plot line chart according to given arguments:
