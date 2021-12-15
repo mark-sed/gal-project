@@ -17,15 +17,15 @@ The heuristic genetic approach (`-h`) on the other hand turned out to be time-wi
 
 The following graph showcases the computation time based on the graph size:
 
-![graph](https://github.com/mark-sed/gal-project/blob/main/bench_statistics/dense.png?raw=true)
+![graph](https://github.com/mark-sed/gp-k-coloring/blob/main/bench_statistics/dense.png?raw=true)
 
 The following graphs shows the way different run times for evolution algorithm compare to the other two:
 
-![graph](https://github.com/mark-sed/gal-project/blob/main/bench_statistics/runs_geh.png?raw=true)
+![graph](https://github.com/mark-sed/gp-k-coloring/blob/main/bench_statistics/runs_geh.png?raw=true)
 
-![box graph](https://github.com/mark-sed/gal-project/blob/main/bench_statistics/box_geh.png?raw=true)
+![box graph](https://github.com/mark-sed/gp-k-coloring/blob/main/bench_statistics/box_geh.png?raw=true)
 
-Additional graphs can be found in the [`benchmark_statistics`](https://github.com/mark-sed/gal-project/tree/main/bench_statistics) folder.
+Additional graphs can be found in the [`benchmark_statistics`](https://github.com/mark-sed/gp-k-coloring/tree/main/bench_statistics) folder.
 
 ## How to run this
 To compile the program from source use `make` command, which will create this program as `gal.out` binary file.
